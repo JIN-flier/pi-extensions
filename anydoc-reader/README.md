@@ -32,12 +32,12 @@ Pi 会安装插件声明的运行依赖，并从 `package.json` 的 `pi` 配置�
 ### 从本地目录安装
 
 ```bash
-cd /path/to/anydoc-read
-npm ci
-pi install .
+cd /path/to/pi-extensions   # 仓库根目录
+npm install
+pi install ./anydoc-reader
 ```
 
-本地目录安装不会由 Pi 修改或安装该目录的依赖，因此需要先执行 `npm ci`。如果只用 `pi -e /path/to/anydoc-read/src/index.ts` 临时加载 Extension，还需把 `skills/anydoc-read/` 链接或复制到 Pi 的标准 Skill 目录；按包安装则会一并加载 Skill。
+本地目录安装不会由 Pi 修改或安装该目录的依赖。依赖统一安装在仓库根目录的 `node_modules` 中，Node 会从 `anydoc-reader/src/` 逐级向上解析，所以只需在仓库根目录执行一次 `npm install`（不要在各子包里单独安装）。如果只用 `pi -e /path/to/pi-extensions/anydoc-reader/src/index.ts` 临时加载 Extension，还需把 `skills/anydoc-read/` 链接或复制到 Pi 的标准 Skill 目录；按包安装则会一并加载 Skill。
 
 ## 如何使用
 

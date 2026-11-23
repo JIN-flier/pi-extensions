@@ -7,11 +7,13 @@ Pi extension for clearing visible output and browsing the current branch's Q&A h
 - Node.js 22.19 or later
 - `@earendil-works/pi-coding-agent` and `@earendil-works/pi-tui` 1.6.x
 
+This extension lives in the `pi-extensions` monorepo, so dependencies are installed once at the repo root:
+
 ```bash
-npm install
-npm run dev
+npm install          # at the repo root
+npm run dev -w clear-command
 # Or load it from another directory:
-pi -e /absolute/path/to/clear-command/src/index.ts
+pi -e /absolute/path/to/pi-extensions/clear-screen/src/index.ts
 ```
 
 ## Commands

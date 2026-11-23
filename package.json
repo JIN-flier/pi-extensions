@@ -1,0 +1,36 @@
+{
+  "name": "pi-extensions",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Monorepo for Pi agent extensions",
+  "license": "MIT",
+  "workspaces": [
+    "anydoc-reader",
+    "clear-screen",
+    "model-picker"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "check": "npm run typecheck && npm run test"
+  },
+  "allowScripts": {
+    "@google/genai@2.32.0": true,
+    "protobufjs@7.6.6": true
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^1.6.0",
+    "@earendil-works/pi-tui": "^1.6.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.5",
+    "eslint": "^10.14.0",
+    "prettier": "^3.9.10",
+    "typebox": "^1.4.7",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1"
+  }
+}

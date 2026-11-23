@@ -1,10 +1,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Container, Text, TuiMainScreen, TuiAltScreen } from '@earendil-works/pi-tui';
 import { clearScreen } from '../src/clear-screen.ts';
+
+// Resolve the host package through Node instead of a hardcoded
+// ./node_modules path, so the tests work whether dependencies are installed
+// locally or hoisted to a monorepo root.
+const hostRoot = dirname(dirname(fileURLToPath(import.meta.resolve('@earendil-works/pi-coding-agent'))));
+const hostImport = (relativePath) => pathToFileURL(resolve(hostRoot, relativePath)).href;
+
 // Characterize the Pi 1.6 host adapter against its real proxy and layout root.
-import { createInteractiveTuiReference } from '../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/tui-renderer.js';
-import { createChatViewport } from '../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/chat-viewport.js';
+// These files are not in the package's `exports`, so import them by absolute URL.
+const { createInteractiveTuiReference } = await import(hostImport('dist/modes/interactive/tui-renderer.js'));
+const { createChatViewport } = await import(hostImport('dist/modes/interactive/chat-viewport.js'));
 import { MemoryTerminal, harness, hostLayout } from './helpers.mjs';
 
 test('unrecognized containers are never cleared', async () => {
