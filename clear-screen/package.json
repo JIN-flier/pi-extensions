@@ -1,0 +1,33 @@
+{
+  "name": "clear-command",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Pi extension providing /clear and /history commands",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "scripts": {
+    "dev": "pi -e ./src/index.ts",
+    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "~1.6.0",
+    "typebox": "*",
+    "@earendil-works/pi-tui": "~1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}
