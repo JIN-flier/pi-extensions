@@ -1,136 +1,71 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { formatReport, formatSummaryLine, summarize } from "../src/report.ts";
+import { renderReport } from "../src/report.ts";
 
-import type { SessionEntry } from "@earendil-works/pi-coding-agent";
+import type { ProjectSummary } from "../src/summarize.ts";
 
-function entry<T extends SessionEntry["type"]>(
-  value: Extract<SessionEntry, { type: T }>,
-): SessionEntry {
-  return value as SessionEntry;
+function project(name: string, sessionCount = 1): ProjectSummary {
+  return {
+    project: name,
+    sessionCount,
+    tasks: `### 具体任务进展\n\n${name} 的任务段落。`,
+    results: `### 得到什么结果\n\n${name} 的结果段落。`,
+    nextSteps: `### 后续安排\n\n${name} 的后续段落。`,
+  };
 }
 
-function baseFields(id: string) {
-  return { id, parentId: null, timestamp: `2026-11-23T10:00:0${id}.000Z` };
-}
-
-test("summarize counts turns, tool calls, compactions and models", () => {
-  const entries: SessionEntry[] = [
-    entry({
-      ...baseFields("1"),
-      type: "message",
-      message: { role: "user", content: "hi", timestamp: 1 },
-    }),
-    entry({
-      ...baseFields("2"),
-      type: "message",
-      message: {
-        role: "assistant",
-        content: [
-          { type: "text", text: "calling a tool" },
-          {
-            type: "toolCall",
-            id: "call-1",
-            name: "read",
-            arguments: {},
-          },
-        ],
-        api: "anthropic-messages",
-        provider: "anthropic",
-        model: "claude-sonnet-4",
-        timestamp: 2,
-      } as unknown as Extract<SessionEntry, { type: "message" }>["message"],
-    }),
-    entry({
-      ...baseFields("3"),
-      type: "message",
-      message: {
-        role: "toolResult",
-        toolCallId: "call-1",
-        toolName: "read",
-        content: [],
-        isError: false,
-        timestamp: 3,
-      },
-    }),
-    entry({
-      ...baseFields("4"),
-      type: "compaction",
-      summary: "summarized",
-      firstKeptEntryId: "1",
-      tokensBefore: 1000,
-    }),
-  ];
-
-  const stats = summarize(entries);
-
-  assert.equal(stats.userTurns, 1);
-  assert.equal(stats.assistantTurns, 1);
-  assert.equal(stats.toolCalls, 1);
-  assert.equal(stats.toolResults, 1);
-  assert.equal(stats.compactions, 1);
-  assert.deepEqual(stats.models, ["anthropic/claude-sonnet-4"]);
-});
-
-test("summarize ignores non-message bookkeeping and de-duplicates models", () => {
-  const entries: SessionEntry[] = [
-    entry({
-      ...baseFields("1"),
-      type: "model_change",
-      provider: "anthropic",
-      modelId: "claude-sonnet-4",
-    }),
-    entry({
-      ...baseFields("2"),
-      type: "model_change",
-      provider: "anthropic",
-      modelId: "claude-sonnet-4",
-    }),
-    entry({
-      ...baseFields("3"),
-      type: "session_info",
-      name: "renamed",
-    }),
-  ];
-
-  const stats = summarize(entries);
-
-  assert.deepEqual(stats.models, ["anthropic/claude-sonnet-4"]);
-  assert.equal(stats.userTurns, 0);
-  assert.equal(stats.assistantTurns, 0);
-});
-
-test("formatReport renders markdown with meta and a dash for unknown models", () => {
-  const markdown = formatReport(
+test("renderReport 输出统计头，并按项目整合三个部分", () => {
+  const markdown = renderReport(
+    [project("/proj/a", 2), project("/proj/b")],
     {
-      userTurns: 2,
-      assistantTurns: 2,
-      toolCalls: 3,
-      toolResults: 3,
-      compactions: 0,
-      models: [],
+      from: new Date(2026, 10, 23),
+      to: new Date(2026, 10, 24),
+      allBranches: true,
     },
-    { date: "2026-11-23", sessionId: "sess-1", cwd: "/tmp/project" },
+    3,
+    ["Session /tmp/x.json 无法读取：bad"],
   );
 
-  assert.match(markdown, /^## Daily report — 2026-11-23$/m);
-  assert.match(markdown, /`sess-1`/);
-  assert.match(markdown, /`\/tmp\/project`/);
-  assert.match(markdown, /- Tool calls: 3/);
-  assert.match(markdown, /- Models: —/);
+  assert.ok(markdown.startsWith("# Pi Agent 工作报告"));
+  assert.match(markdown, /分支范围：完整分支树/);
+  assert.match(markdown, /Session 数：3/);
+  assert.match(markdown, /项目数：2/);
+
+  // 项目顺序与传入顺序一致
+  const first = markdown.indexOf("## 项目：/proj/a");
+  const second = markdown.indexOf("## 项目：/proj/b");
+  assert.ok(first >= 0 && second > first);
+
+  // 每个项目内三部分按 tasks → results → nextSteps 排列
+  const aTasks = markdown.indexOf("/proj/a 的任务段落。");
+  const aResults = markdown.indexOf("/proj/a 的结果段落。");
+  const aNext = markdown.indexOf("/proj/a 的后续段落。");
+  assert.ok(aTasks < aResults && aResults < aNext);
+
+  // 小节标题来自 skill 输出，原样保留
+  assert.match(markdown, /### 具体任务进展/);
+  assert.match(markdown, /### 得到什么结果/);
+  assert.match(markdown, /### 后续安排/);
+
+  // 生成警告作为报告末尾的独立小节
+  assert.match(markdown, /## 生成警告\n\n- Session \/tmp\/x\.json 无法读取：bad/);
+  assert.ok(markdown.endsWith("\n"));
 });
 
-test("formatSummaryLine stays on one line", () => {
-  const line = formatSummaryLine({
-    userTurns: 1,
-    assistantTurns: 2,
-    toolCalls: 3,
-    toolResults: 3,
-    compactions: 0,
-    models: [],
-  });
+test("renderReport 在没有任何项目时输出空态说明且不带警告小节", () => {
+  const markdown = renderReport(
+    [],
+    {
+      from: new Date(2026, 10, 23),
+      to: new Date(2026, 10, 24),
+      allBranches: false,
+    },
+    0,
+    [],
+  );
 
-  assert.equal(line, "1 user turns · 2 assistant turns · 3 tool calls · 0 compactions");
-  assert.ok(!line.includes("\n"));
+  assert.match(markdown, /指定时间范围内没有发现可分析的 Session 活动。/);
+  assert.match(markdown, /分支范围：当前活动分支/);
+  assert.ok(!markdown.includes("## 生成警告"));
 });
