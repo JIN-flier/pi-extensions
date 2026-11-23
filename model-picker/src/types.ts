@@ -4,7 +4,8 @@ import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 // Basic Types
 // ============================================================
 
-export type Tier = string[number];
+/** 档位名来自配置文件的键，没有固定枚举，所以就是普通字符串。 */
+export type Tier = string;
 
 export type PricingPeriod = "peak" | "offPeak";
 

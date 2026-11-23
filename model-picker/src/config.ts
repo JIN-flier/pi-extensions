@@ -9,7 +9,6 @@ import {
   type PricingPeriod,
   type TierPlan,
 } from "./types.ts";
-import { console } from "node:inspector";
 
 // ============================================================
 // Configuration Path

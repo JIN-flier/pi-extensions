@@ -3,7 +3,9 @@ import type {
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 
-import { type AutoModelConfig, type Tier } from "./types.ts";
+import { type AutoModelConfig } from "./types.ts";
+
+import { findTier, getConfiguredTiers } from "./tiers.ts";
 
 import { CONFIG_PATH, loadConfig } from "./config.ts";
 
@@ -173,15 +175,10 @@ export default async function (pi: ExtensionAPI) {
       // Direct Tier Selection
       // ------------------------------------------------------
 
-      const tier_list: string[] = [];
-      Object.keys(config.plans.peak).forEach((key) => {
-        tier_list.push(key);
-      });
-
-      const tier = tier_list.find((item) => item === command);
+      const tier = findTier(config, command);
 
       if (tier) {
-        await switchModelForTier(tier as Tier, ctx, pi, config);
+        await switchModelForTier(tier, ctx, pi, config);
 
         return;
       }
@@ -198,6 +195,7 @@ export default async function (pi: ExtensionAPI) {
           "/model-picker <your tier>",
           "/model-picker reload",
           "/model-picker status",
+          `可用档位：${getConfiguredTiers(config).join(", ") || "（配置中没有任何档位）"}`,
         ].join("\n"),
         "warning",
       );

@@ -3,7 +3,8 @@ import type {
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 
-import { TIERS, type AutoModelConfig, type Tier } from "./types.ts";
+import { getTiers } from "./tiers.ts";
+import { type AutoModelConfig, type Tier } from "./types.ts";
 
 import { getPricingPeriod } from "./time-manager.ts";
 
@@ -30,7 +31,10 @@ export async function showModelSelector(
   // 2. Build Selection Options
   // ----------------------------------------------------------
 
-  const options = TIERS.map((tier) => {
+  const options = getTiers(config.plans[period]).map((tier): {
+    tier: Tier;
+    label: string;
+  } => {
     const choice = config.plans[period][tier];
 
     return {
