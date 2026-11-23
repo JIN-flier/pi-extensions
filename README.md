@@ -8,7 +8,8 @@ Monorepo for my [Pi](https://pi.dev) agent extensions. Dependencies are installe
 | ---------------- | ----------------- | --------------------------------------------------- |
 | `anydoc-reader/` | `anydoc-read`     | `anydoc_convert` / `anydoc_formats` tools + skill    |
 | `clear-screen/`  | `clear-command`   | `/clear` and `/history` commands                    |
-| `model-picker/`  | `pi-daily-report` | `/model-picker` peak/off-peak model selection        |
+| `daily-report/`  | `pi-daily-report` | `/daily-report` session summary (skeleton)          |
+| `model-picker/`  | `pi-model-picker` | `/model-picker` peak/off-peak model selection        |
 
 ## Setup
 
@@ -24,7 +25,7 @@ npm run test                      # every workspace
 npm run check                     # typecheck + test
 
 npm run dev -w clear-command      # pi -e ./src/index.ts in one workspace
-npm run typecheck -w anydoc-read  # one workspace
+npm run test -w pi-daily-report   # one workspace, by package name
 ```
 
 ## How dependency resolution works
@@ -41,5 +42,5 @@ Rules that keep this working:
 
 ## Notes
 
-- `daily-report/` is not a workspace (it currently only contains a copied `package.json`).
+- `daily-report` is a skeleton: `/daily-report` summarizes the current session branch (`src/report.ts` holds the pure formatting logic, `tests/` covers it). Extend it there rather than in `src/index.ts`.
 - `clear-screen`'s tests import two deep host files that the package's `exports` map hides; they resolve the host package through Node instead of a hardcoded `./node_modules` path so they keep working with hoisted dependencies.

@@ -8,6 +8,7 @@
   "workspaces": [
     "anydoc-reader",
     "clear-screen",
+    "daily-report",
     "model-picker"
   ],
   "engines": {

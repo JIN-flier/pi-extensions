@@ -1,0 +1,28 @@
+{
+  "name": "pi-daily-report",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pi extension that summarizes the current session into a daily report",
+  "license": "MIT",
+  "author": "flier",
+  "type": "module",
+  "keywords": [
+    "pi-package"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "dev": "pi -e ./src/index.ts",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  }
+}
