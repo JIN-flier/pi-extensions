@@ -4,10 +4,17 @@ import {
   SessionManager,
   type ExtensionAPI,
 } from "@earendil-works/pi-coding-agent";
+import { Text } from "@earendil-works/pi-tui";
 import { runReport } from "./run.ts";
 import { createReportComplete, loadReportSkills } from "./skills.ts";
 
+const progressEntryType = "daily-report-progress";
+
 export default function dailyReport(pi: ExtensionAPI): void {
+  pi.registerEntryRenderer<string>(progressEntryType, (entry) =>
+    new Text(entry.data ?? "", 1, 0),
+  );
+
   pi.registerCommand("daily-report", {
     description: "跨项目、跨 Session 生成指定时间范围的 Markdown 工作报告",
     handler: async (args, ctx) => {
@@ -52,10 +59,10 @@ export default function dailyReport(pi: ExtensionAPI): void {
             await mkdir(dirname(path), { recursive: true });
             await writeFile(path, content, "utf8");
           },
-          progress: (message) => ctx.ui.notify(message, "info"),
+          progress: (message) => pi.appendEntry(progressEntryType, message),
         });
         ctx.ui.notify(
-          `报告已保存：${result.path}（${result.projectCount} 个项目，${result.sessionCount} 个 Session）`,
+          `任务结束，报告已保存：${result.path}（${result.projectCount} 个项目，${result.sessionCount} 个 Session）`,
           result.warningCount ? "warning" : "info",
         );
       } catch (error) {
